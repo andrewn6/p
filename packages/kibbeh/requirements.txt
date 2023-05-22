@@ -1,7 +1,6 @@
 uuid
 python-dotenv
-openai
-pdfminer
+pdfminer-six
 fpdf
 spacy
 sanic
