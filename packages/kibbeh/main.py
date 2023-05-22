@@ -1,5 +1,5 @@
 from sanic import Sanic
-from sanic.response import text, file 
+from sanic.response import text, file
 from sanic.log import logger
 from sanic import response
 
@@ -8,6 +8,7 @@ from fpdf import FPDF
 
 import os
 import uuid
+import json
 
 from io import StringIO
 from tempfile import NamedTemporaryFile
@@ -77,7 +78,7 @@ async def upload(request):
     return response.text('No pdf file uploaded!', 400)
 
   pdf_file = request.files.get('pdf_file') 
-  file_type = pdf_file.filename.rsplit(".", 1)[1].lower()
+  file_type = pdf_file.name.rsplit(".", 1)[1].lower()
 
   if not pdf_file or file_type != "pdf":
     return sanic.response.text('File uploaded is not a pdf file', 400)
@@ -102,7 +103,7 @@ async def upload(request):
 
   except Exception as e:
     logger.error(f"Error durring processing: {e}")
-    return sanic.response.text("An error occured durring processing", 500)
+    return response.text("An error occured durring processing", 500)
 
   finally:
     os.remove(temp_pdf_path)
@@ -115,7 +116,7 @@ async def get_pdf(request, id):
   if not output_pdf_path:
     return json({'message': 'no file found for this id'}, 404)
 
-  return await FileResponse(output_pdf_path, headers={"Content-Disposition": "attachment"})
+  return await file(output_pdf_path, headers={"Content-Disposition": "attachment"})
 
 if __name__ == "__main__":
   app.run(host="0.0.0.0", port=8080)
