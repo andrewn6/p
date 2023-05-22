@@ -4,21 +4,9 @@ from fpdf import FPDF
 from io import StringIO
 import spacy
 
-openai.api_key = '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'
-
 def read_pdf(file_path):
   text = extract_text(file_path)
   return text
-
-#def summarize(text):
-  #response = openai.Completion.create(
-    #engine="text-davinci-003",
-   # prompt=text,
-    #temperature=0.3,
-    #max_tokens=201
- # )
-
- # return response.choices[0].text.strip()
 
 def summarize(text):
     nlp = spacy.load("en_core_web_sm")
