@@ -56,10 +56,14 @@ def write_pdf(file_path, title, text):
 @app.route('/upload', methods=['POST'])
 async def upload(request):  
   if not request.files or 'pdf_file' not in request.files:
-    return sanic.response.text('no pdf file uploaded!', 400)
+    return sanic.response.text('No pdf file uploaded!', 400)
 
   pdf_file = request.files.get('pdf_file') 
+  file_type = pdf_file.filename.rsplit(".", 1)[1].lower()
 
+  if not pdf_file or file_type != "pdf":
+    return sanic.response.text('File uploaded is not a pdf file', 400)
+  
   with NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
     temp_file.write(pdf_file.body)
     temp_pdf_path = temp_file.name
@@ -77,7 +81,7 @@ async def upload(request):
 
   except Exception as e:
     logger.error(f"Error durring processing: {e}")
-    return sanic.response.text(" an error occursed durring processing.", 500)
+    return sanic.response.text("An error occured durring processing", 500)
 
   finally:
     os.remove(temp_pdf_path)
