@@ -1,5 +1,4 @@
-openai
-pdfminer
+pdfminer-six
 fpdf
 spacy
 sanic

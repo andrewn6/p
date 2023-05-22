@@ -16,7 +16,5 @@
     "@sveltejs/kit": "^1.18.0",
     "svelte-preprocess": "^5.0.3"
   },
-  "type": "module",
-  "dependencies": {
-  }
+  "type": "module"
 }
