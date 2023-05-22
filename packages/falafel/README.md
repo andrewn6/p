@@ -1,4 +1,4 @@
 # falafel
-falafel = frontend... lol
+falafel = frontend... obviously
 
 basic sveltekit scaffolding, nothing here yet 
