@@ -1,6 +1,7 @@
 <script lang="ts">
-  export let primary = false;
+  export let primary: boolean = false;
   export let link: string | false = false;
+  export let fullWidth: boolean = false;
 </script>
 
 <svelte:element
@@ -8,6 +9,7 @@
   {...{ href: link }}
   class="button"
   class:primary
+  class:fullWidth
 >
   <slot />
 </svelte:element>
@@ -20,7 +22,7 @@
     font: var(--font-text);
     font-weight: 500;
     background: var(--bg-l2);
-    margin: 5px;
+    margin: 5px 0;
     transition: 0.1s;
     cursor: pointer;
     text-decoration: none;
@@ -37,9 +39,11 @@
     background: var(--accent-gradient);
     background-size: 130%;
   }
-
   .primary:hover {
     background: var(--accent-gradient);
     background-position: 100% 10%;
+  }
+  .fullWidth {
+    width: 100%;
   }
 </style>
