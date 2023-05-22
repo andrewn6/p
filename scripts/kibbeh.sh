@@ -1,1 +1,1 @@
-cd packages/kibbeh && pip install -r requirements.txt && python main.py
+cd packages/kibbeh && pip install -r requirements.txt && sanic main

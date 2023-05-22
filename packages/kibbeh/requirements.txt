@@ -2,3 +2,4 @@ openai
 pdfminer
 fpdf
 spacy
+sanic
