@@ -2,13 +2,33 @@ import sanic
 from sanic import Sanic
 from sanic.response import text, file
 from sanic.log import logger
+from sanic import response
+
 from pdfminer.high_level import extract_text
 
 from fpdf import FPDF
+
+import os
+import uuid
+import json
+
 from io import StringIO
 from tempfile import NamedTemporaryFile
 
+import redis
+from dotenv import load_dotenv
 import spacy
+
+load_dotenv()
+
+redis_password = os.getenv("REDIS_PASSWORD")
+
+r = redis.Redis(
+  host= 'trusty-shiner-35228.upstash.io',
+  port= '35228',
+  password=redis_password,
+  ssl=True
+)
 
 app = Sanic("Summarizer")
 
@@ -64,8 +84,8 @@ async def upload(request):
     if not request.files or 'pdf_file' not in request.files:
         return sanic.response.text('No pdf file uploaded, append one to FormData under pdf_file', 400)
 
-    pdf_file = request.files.get('pdf_file')
-    file_type = pdf_file.filename.rsplit(".", 1)[1].lower()
+  pdf_file = request.files.get('pdf_file') 
+  file_type = pdf_file.name.rsplit(".", 1)[1].lower()
 
     if not pdf_file or file_type != "pdf":
         return sanic.response.text('File uploaded is not a pdf file', 400)
@@ -83,16 +103,27 @@ async def upload(request):
 
         write_pdf(output_pdf_path, "Summarized File", summary)
 
-        return await FileResponse(output_pdf_path, headers={"Content-Disposition": "attachment"})
+    unique_id = str(uuid.uuid4())
+    r.set(unique_id, output_pdf_path)
 
-    except Exception as e:
-        logger.error(f"Error durring processing: {e}")
-        return sanic.response.text("An error occured durring processing", 500)
+    return json({"id": unique_id}, 200)
 
-    finally:
-        os.remove(temp_pdf_path)
-        if 'output_pdf_path' in locals():
-            os.remove(output_pdf_path)
+  except Exception as e:
+    logger.error(f"Error durring processing: {e}")
+    return response.text("An error occured durring processing", 500)
+
+  finally:
+      os.remove(temp_pdf_path)
+      if 'output_pdf_path' in locals():
+          os.remove(output_pdf_path)
+
+@app.route('/pdf/<id>', methods=['GET'])
+async def get_pdf(request, id):
+  output_pdf_path = r.get(id)
+  if not output_pdf_path:
+    return json({'message': 'no file found for this id'}, 404)
+
+  return await file(output_pdf_path, headers={"Content-Disposition": "attachment"})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000)
+  app.run(host="0.0.0.0", port=8080)

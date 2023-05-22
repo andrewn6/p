@@ -1,4 +1,7 @@
+uuid
+python-dotenv
 pdfminer-six
 fpdf
 spacy
 sanic
+redis
