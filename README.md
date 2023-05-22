@@ -10,3 +10,7 @@ hosted on p.nijmeh.world if you wanna try it out!
 - python for backend
 - svelte for the UI
 - spaCy for NLP
+
+## folder breakdown
+- `kibbeh` summarizes the pdfs and outputs them, it is served as a Sanic API
+- `falafel` svelte frontend
