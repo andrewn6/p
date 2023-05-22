@@ -1,5 +1,8 @@
+uuid
+python-dotenv
 openai
 pdfminer
 fpdf
 spacy
 sanic
+redis

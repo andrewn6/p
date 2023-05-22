@@ -1,2 +1,2 @@
 # kibbeh
-kibbeh = api
+`api`
