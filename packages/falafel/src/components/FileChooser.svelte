@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { cubicIn, cubicOut } from "svelte/easing";
+  import { scale } from "../animations";
 
   let dropZone: HTMLDivElement, fileInput: HTMLInputElement;
-  let selectedPDF: File, active: boolean = false;
+  let selectedPDF: File,
+    active: boolean = false;
   function handleDragEnter() {
     active = true;
   }
@@ -35,24 +36,6 @@
 
     selectedPDF = file!;
   }
-
-  function scale(node: HTMLElement, { duration = 200, offset = 0, delay = 0, isReversed = 0 }) {
-    return {
-      duration,
-      delay,
-      css: (t: number) => {
-        let eased = t;
-        if (isReversed) eased = cubicIn(1 - eased);
-        else eased = cubicOut(eased);
-
-        const computedScale = (1 - eased) * 0.1 - (offset - 1);
-        console.log(
-          `ComputedScale for ${node.tagName} for t ${t} is ${computedScale}`
-        );
-        return `opacity: ${t}; transform: scale(${computedScale})`;
-      },
-    };
-  }
 </script>
 
 <div
@@ -67,12 +50,14 @@
   {#if selectedPDF}
     <div
       in:scale={{ duration: 300, delay: 200, offset: 0 }}
+      out:scale={{ duration: 300, isReversed: 1, offset: 0.1 }}
       class="selected-file"
     >
       {selectedPDF.name}
     </div>
   {:else}
     <p
+      in:scale={{ duration: 300, delay: 200, offset: 0 }}
       out:scale={{ duration: 300, isReversed: 1, offset: 0.1 }}
       class="file-choose-placeholder"
       style="margin: 0 10px"

@@ -60,7 +60,7 @@ body {
 .app>.container {
     grid-row: 1;
     grid-column: 1;
-    width: 400px;
+    width: min(clamp(200px, 40ch, 600px), 100%);
 }
 
 .flex {

@@ -26,6 +26,7 @@
     transition: 0.1s;
     cursor: pointer;
     text-decoration: none;
+    text-align: center;
   }
   .button:hover {
     scale: 1.005;
