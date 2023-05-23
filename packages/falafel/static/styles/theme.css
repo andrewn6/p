@@ -1,0 +1,29 @@
+:root {
+    --bg-l0: hsl(0 0% 100%);
+    --bg-l1: hsl(0, 0%, 97%);
+    --bg-l2: hsl(0, 0%, 92%);
+    --bg-l3: hsl(0, 0%, 88%);
+    --border: hsl(0 0% 75%);
+    --border-focus: hsl(0 0% 60%);
+    --fg-l2: hsl(0 0% 50%);
+    --fg-l1: hsl(0 0% 20%);
+    --fg-l0: hsl(0 0% 0%);
+
+    --accent-1: hsl(281, 100%, 52%);
+    --accent-2: hsl(266, 100%, 52%);
+    --accent-gradient: linear-gradient(100deg,
+            var(--accent-1) 43.51%,
+            var(--accent-2) 100%);
+
+    --shadow: 0px 10px 16px 0px hsla(0, 0%, 0%, 0.06);
+
+    --radius-m: 14px;
+    --radius-s: calc(var(--radius-m) / 2);
+
+    --font-family: Instrument Sans, system-ui, sans-serif;
+    --font-heading: 700 clamp(1.4rem, calc(1rem + 3vw), 4rem) var(--font-family);
+    --font-subheading: 500 1.2rem var(--font-family);
+    --font-text: 400 1rem var(--font-family);
+    --font-quiet: 300 0.9rem var(--font-family);
+    --font-footer: 400 0.7rem var(--font-family);
+}

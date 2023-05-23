@@ -1,7 +1,7 @@
 <script lang="ts">
   import { scale } from "../animations";
 
-  export let selectedPDF: File,
+  export let selectedPDF: File | null,
     active: boolean = false;
   function handleDragEnter() {
     active = true;
@@ -47,7 +47,7 @@
 >
   {#if selectedPDF}
     <div
-      in:scale={{ duration: 300, delay: 200, offset: 0 }}
+      in:scale={{ duration: 300, delay: 150, offset: 0 }}
       out:scale={{ duration: 300, isReversed: 1, offset: 0.1 }}
       class="selected-file"
     >
@@ -55,7 +55,6 @@
     </div>
   {:else}
     <p
-      in:scale={{ duration: 300, delay: 200, offset: 0 }}
       out:scale={{ duration: 300, isReversed: 1, offset: 0.1 }}
       class="file-choose-placeholder"
       style="margin: 0 10px"
@@ -83,7 +82,7 @@
 <style>
   .file-choose {
     padding: 8px;
-    margin: 5px 0;
+    margin: 8px 0;
     width: 100%;
     min-height: 60px;
     border: 2px dashed var(--border);
@@ -106,6 +105,7 @@
     font: var(--font-quiet);
     color: var(--fg-l2);
     font-style: italic;
+    text-align: center;
   }
 
   .selected-file {

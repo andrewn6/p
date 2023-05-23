@@ -36,7 +36,7 @@ def read_pdf(file_path):
     return text
 
 
-def summarize(text):
+def summarize_pdf(text):
     nlp = spacy.load("en_core_web_sm")
     doc = nlp(text)
     sentences = [sent.text for sent in doc.sents]
@@ -94,7 +94,7 @@ async def summarize(request):
 
     try:
         text = read_pdf(temp_pdf_path)
-        summary = summarize(text)
+        summary = summarize_pdf(text)
 
         with NamedTemporaryFile(delete=False, suffix=".pdf") as output_temp_file:
             output_pdf_path = output_temp_file.name
@@ -107,7 +107,7 @@ async def summarize(request):
         return json({"id": unique_id}, 200)
 
     except Exception as e:
-        logger.error(f"Error durring processing: {e}")
+        logger.error(f"Error during processing: {e}")
         return response.text("An error occured durring processing", 500)
 
     finally:

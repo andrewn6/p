@@ -4,27 +4,33 @@
   import Button from "@components/Button.svelte";
   import FileChooser from "@components/FileChooser.svelte";
   import Layout from "../layout.svelte";
+  import { API_URL } from "../../constants";
 
   let selectedPDF: File | null = null;
+  let loading: boolean = false;
   $: disabled = !(
     selectedPDF &&
-    selectedPDF.type === "applicatation/pdf" &&
+    selectedPDF.type === "application/pdf" &&
     true
   );
 
-  async function summarize(file: File) {
+  async function summarize(file: File | null) {
+    if (!file) return;
     // check, again, if the file is a pdf
     // it's safe to not notify the user, only devs like you
     // will be able to bypass the checks above (somehow)...
     if (file.type !== "application/pdf")
       throw new Error("I told you already, only PDFs! 😭");
 
+    loading = true;
+
     const formData = new FormData();
     formData.append("pdf_file", file);
-    const req = await fetch(`${apiURL}/summarize`, {
+    const req = await fetch(`${API_URL}/summarize`, {
       method: "POST",
       body: formData,
     });
+
     const json = await req.json();
     if (json.id) {
       // once done summarizing the pdf, when the user
@@ -43,9 +49,11 @@
   <svelte:fragment slot="heading">New PDF</svelte:fragment>
   <FileChooser bind:selectedPDF />
   <Button
-    on:click={() => /*summarize(selectedPDF)*/ null}
+    on:click={() => summarize(selectedPDF)}
     disabled={disabled || null}
     primary
-    fullWidth>summarize ⚡️</Button
-  >
+    inProgress={loading}
+    fullWidth={true}
+    >{loading ? "summarizing... " : "summarize ⚡️"}
+  </Button>
 </Layout>
