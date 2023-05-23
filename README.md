@@ -25,4 +25,6 @@ example using curl:
 - `curl -X POST -F "pdf_file=@test.pdf" http://localhost:8080/upload`
 
 ### `GET /pdf/[id]`
+- `curl -0 -J -L http://localhost:8080/pdf/[id]`
+
 returns the pdf with the corresponding id
