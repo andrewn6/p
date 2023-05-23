@@ -77,8 +77,8 @@ def write_pdf(file_path, title, text):
     pdf.output(file_path)
 
 
-@app.route('/upload', methods=['POST'])
-async def upload(request):
+@app.route('/summarize', methods=['POST'])
+async def summarize(request):
     if not request.files or 'pdf_file' not in request.files:
         return response.text('No pdf file uploaded!', 400)
 

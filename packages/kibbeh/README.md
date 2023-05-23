@@ -4,7 +4,7 @@
 
 ## endpoints
 
-### `POST /upload`
+### `POST /summarize`
 
 append a PDF file to FormData under the field `pdf_file`
 
