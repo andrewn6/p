@@ -13,7 +13,7 @@
 
 <div class="app">
   <div
-    in:scale={{ ...SCALE_ANIMATION, delay: 200 }}
+    in:scale={{ ...SCALE_ANIMATION, delay: SCALE_ANIMATION.duration/2 }}
     out:scale={SCALE_ANIMATION}
     class="container"
   >
@@ -33,6 +33,11 @@
 </footer>
 
 <style global>
+  * {
+    margin: 0;
+    box-sizing: border-box;
+  }
+
   body {
     font: var(--font-text);
     line-height: 1.3;
