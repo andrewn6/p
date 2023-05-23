@@ -1,5 +1,5 @@
 from sanic import Sanic
-from sanic.response import text, file
+from sanic.response import text, file 
 from sanic.log import logger
 from sanic import response
 
@@ -104,7 +104,7 @@ async def summarize(request):
         unique_id = str(uuid.uuid4())
         r.set(unique_id, output_pdf_path)
 
-        return json({"id": unique_id}, 200)
+        return response.json({"id": unique_id}, 200)
 
     except Exception as e:
         logger.error(f"Error during processing: {e}")
