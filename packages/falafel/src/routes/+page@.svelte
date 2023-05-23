@@ -1,5 +1,5 @@
 <script>
-  import Button from "../components/Button.svelte";
+  import Button from "@components/Button.svelte";
   import Layout from "./layout.svelte";
 </script>
 

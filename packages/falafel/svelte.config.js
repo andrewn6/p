@@ -10,6 +10,9 @@ const config = {
 			assets: "build",
 			strict: true,
 		}),
+		alias: {
+			"@components": "./src/components/*"
+		}
 	},
 };
 

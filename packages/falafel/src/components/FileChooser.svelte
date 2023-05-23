@@ -1,8 +1,7 @@
 <script lang="ts">
   import { scale } from "../animations";
 
-  let dropZone: HTMLDivElement, fileInput: HTMLInputElement;
-  let selectedPDF: File,
+  export let selectedPDF: File,
     active: boolean = false;
   function handleDragEnter() {
     active = true;
@@ -43,7 +42,6 @@
   on:dragleave={handleDragLeave}
   on:drop={handleDrop}
   on:dragover={(e) => e.preventDefault()}
-  bind:this={dropZone}
   class="file-choose transition-enforcement"
   class:active
 >
@@ -70,9 +68,15 @@
   <input
     type="file"
     id="fileUpload"
-    on:input={(e) => updateSelectedFile(Array.from(e.target.files))}
+    on:input={(e) => {
+      // Ignore these because svelte does not have TypeScript support in markup template
+      // https://github.com/sveltejs/svelte/issues/4701
+      // @ts-ignore
+      if (!e.target.files) return;
+      // @ts-ignore
+      updateSelectedFile(Array.from(e.target.files));
+    }}
     style="display: none"
-    bind:this={fileInput}
   />
 </div>
 

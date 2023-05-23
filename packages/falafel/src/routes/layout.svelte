@@ -1,7 +1,5 @@
 <script lang="ts">
   import { scale } from "../animations";
-  export const ssr = false;
-  export const prerender = true;
 
   export let back = false;
 
@@ -34,20 +32,90 @@
   <a class="link" href="https://pineapplerind.xyz">PineappleRind</a>
 </footer>
 
-<style>
+<style global>
+  body {
+    font: var(--font-text);
+    line-height: 1.3;
+  }
+
+  .app {
+    height: 100dvh;
+    width: 100dvw;
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-template-columns: 1fr;
+    place-items: center;
+    overflow: hidden;
+  }
+
+  .app > .container {
+    grid-row: 1;
+    grid-column: 1;
+    min-width: min(clamp(200px, 40ch, 600px), 100%);
+  }
+
+  .flex {
+    display: flex;
+  }
+
+  .heading {
+    font: var(--font-heading);
+    white-space: nowrap;
+  }
+
+  .subheading,
+  .subheading a {
+    font: var(--font-subheading);
+    color: var(--fg-l2);
+    text-decoration: none;
+  }
+
+  footer {
+    font: var(--font-footer);
+    color: var(--fg-l2);
+    position: absolute;
+    bottom: 10px;
+    width: 100vw;
+    width: 100dvw;
+    text-align: center;
+  }
+
+  .transition-enforcement {
+    display: grid !important;
+    align-items: start;
+  }
+
+  .transition-enforcement > * {
+    grid-column: 1/2;
+    grid-row: 1/2;
+  }
+
   .link-back {
     transition: 0.2s;
   }
+
   .link-back:hover {
     color: var(--fg-l1);
   }
+
   .link-back::before {
     display: inline-block;
     content: "←";
     margin-right: 0.3em;
     transition: 0.2s translate;
   }
+
   .link-back:hover::before {
     translate: -4px 0;
+  }
+
+  .link {
+    text-underline-offset: 2px;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .link:hover {
+    text-underline-offset: 3px;
   }
 </style>
