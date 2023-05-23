@@ -29,6 +29,7 @@
     padding: 10px 20px;
     border: 0;
     font: var(--font-text);
+    color: var(--fg-l1);
     font-weight: 500;
     background: var(--bg-l2);
     margin: 8px 0;
@@ -42,6 +43,7 @@
   .button:not([disabled], .inProgress):hover {
     scale: 1.005;
     background: var(--bg-l3);
+    color: var(--fg-l0);
   }
   .button:not([disabled], .inProgress):active {
     scale: 0.995;
@@ -55,6 +57,7 @@
   .primary:not([disabled], .inProgress):hover {
     background: var(--accent-gradient);
     background-position: 100% 10%;
+    color: var(--bg-l0);
   }
   .fullWidth {
     width: 100%;

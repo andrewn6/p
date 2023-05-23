@@ -118,6 +118,7 @@
     text-underline-offset: 2px;
     text-decoration: underline;
     cursor: pointer;
+    color: var(--fg-l1);
   }
 
   .link:hover {

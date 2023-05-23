@@ -3,7 +3,7 @@
     --bg-l1: hsl(0, 0%, 97%);
     --bg-l2: hsl(0, 0%, 92%);
     --bg-l3: hsl(0, 0%, 88%);
-    --border: hsl(0 0% 75%);
+    --border: hsl(0 0% 79%);
     --border-focus: hsl(0 0% 60%);
     --fg-l2: hsl(0 0% 50%);
     --fg-l1: hsl(0 0% 20%);
@@ -17,8 +17,8 @@
 
     --shadow: 0px 10px 16px 0px hsla(0, 0%, 0%, 0.06);
 
-    --radius-m: 14px;
-    --radius-s: calc(var(--radius-m) / 2);
+    --radius-l: calc(var(--radius-m) * 2);
+    --radius-m: 12px;
 
     --font-family: Instrument Sans, system-ui, sans-serif;
     --font-heading: 700 clamp(1.4rem, calc(1rem + 3vw), 4rem) var(--font-family);
