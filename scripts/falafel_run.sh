@@ -13,6 +13,4 @@ if [ -z "$arg" ]; then
     echo -e "\033[0;2mexample:\x1b[0m scripts/falafel_run.sh \033[0;34mdev\x1b[0m"
 else
     bun run $1
-    echo "lol"
-
 fi
