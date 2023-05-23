@@ -113,9 +113,6 @@ async def summarize(request):
 
     finally:
         os.remove(temp_pdf_path)
-        if 'output_pdf_path' in locals():
-            os.remove(output_pdf_path)
-
 
 @app.route('/pdf/<id>', methods=['GET'])
 async def get_pdf(request, id):
@@ -123,7 +120,12 @@ async def get_pdf(request, id):
     if not output_pdf_path:
         return json({'message': 'no file found for this id'}, 404)
 
-    return await file(output_pdf_path, headers={"Content-Disposition": "attachment"})
+    response = await file(output_pdf_path, headers={"Content-Disposition": "attachment"})
+    
+    # Delete the file after it has been served
+    os.remove(output_pdf_path)
+
+    return response 
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
