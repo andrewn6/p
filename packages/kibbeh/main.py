@@ -2,6 +2,7 @@ from sanic import Sanic
 from sanic.response import text, file 
 from sanic.log import logger
 from sanic import response
+from sanic_cors import CORS
 
 from pdfminer.high_level import extract_text
 from fpdf import FPDF
@@ -29,7 +30,7 @@ r = redis.Redis(
 )
 
 app = Sanic("Summarizer")
-
+CORS(app)
 
 def read_pdf(file_path):
     text = extract_text(file_path)
