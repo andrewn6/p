@@ -4,4 +4,5 @@ pdfminer-six
 fpdf
 spacy
 sanic
-redis
+sanic_cors
+transformers

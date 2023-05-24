@@ -33,7 +33,7 @@ def summarize_pdf(text):
     model = transformers.AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
     inputs = tokenizer.encode(processed_text, return_tensors="pt", max_length=512, truncation=True)
-    summary_ids = model.generate(inputs, num_beam=4, max_lengths=150, early_stopping=True)
+    summary_ids = model.generate(inputs, max_length=512, early_stopping=True)
     summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
 
     return summary
