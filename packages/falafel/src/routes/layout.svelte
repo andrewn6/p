@@ -18,10 +18,10 @@
     class="container"
   >
     {#if back}
-      <h2 class="subheading"><a href="/" class="link-back">Back</a></h2>
+      <h2 class="subheading"><a href="javascript:history.back()" class="link-back">Back</a></h2>
     {/if}
     <h1 class="heading"><slot name="heading" /></h1>
-    <slot />
+    <main><slot /></main>
   </div>
 </div>
 

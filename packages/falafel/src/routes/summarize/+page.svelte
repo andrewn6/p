@@ -5,6 +5,7 @@
   import FileChooser from "@components/FileChooser.svelte";
   import Layout from "../layout.svelte";
   import { API_URL } from "../../constants";
+  import type { PDFHistory } from "../history/+page.svelte";
 
   let selectedPDF: File | null = null;
   let loading: boolean = false;
@@ -33,6 +34,14 @@
 
     const json = await req.json();
     if (json.id) {
+      let storedHistory = localStorage.getItem("history") || "{}";
+      let history: PDFHistory = JSON.parse(storedHistory);
+      history.push({
+        name: file.name.replace(".pdf", ""),
+        id: json.id,
+        date: Date.now(),
+      });
+      localStorage.setItem("history", JSON.stringify(history));
       // once done summarizing the pdf, when the user
       // goes back in browser history, go back to the
       // menu instead of back to "summarize a pdf"
