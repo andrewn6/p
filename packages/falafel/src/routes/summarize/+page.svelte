@@ -34,7 +34,7 @@
 
     const json = await req.json();
     if (json.id) {
-      let storedHistory = localStorage.getItem("history") || "{}";
+      let storedHistory = localStorage.getItem("history") || "[]";
       let history: PDFHistory = JSON.parse(storedHistory);
       history.push({
         name: file.name.replace(".pdf", ""),
@@ -45,7 +45,7 @@
       // once done summarizing the pdf, when the user
       // goes back in browser history, go back to the
       // menu instead of back to "summarize a pdf"
-      goto(`/pdf/${json.id}`, { replaceState: true });
+      goto(`/summarization/${json.id}`, { replaceState: true });
     } else {
       alert(
         `an error has occured!!!!!!!!! and idk what it is :O\nthis is a temporary alert until I have a nice error popup`
@@ -63,6 +63,6 @@
     primary
     inProgress={loading}
     fullWidth={true}
-    >{loading ? "summarizing... " : "summarize ⚡️"}
+    >{loading ? "summarizing" : "summarize ⚡️"}
   </Button>
 </Layout>

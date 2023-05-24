@@ -6,6 +6,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import Layout from "../layout.svelte";
+  import Truncator from "@components/Truncator.svelte";
 
   let time = new Date();
   $: now = time.getTime();
@@ -55,10 +56,11 @@
   <ul class="history-container">
     {#if items}
       {#each items as item}
-        <li class="history-item">
-          <a href={`/pdf/${item.id}`}>
-            <span class="history-item-name">{item.name}<small>.pdf</small></span
-            >
+        <li class="history-item-wrapper">
+          <a class="history-item" href={`/summarization/${item.id}`}>
+            <span class="history-item-name">
+              <Truncator>{item.name}</Truncator><small>.pdf</small>
+            </span>
             <span class="history-item-date">
               {getRelativeTime(new Date(item.date), new Date(now))} • {new Date(
                 item.date
@@ -88,20 +90,19 @@
     width: 100%;
     margin: 10px 0;
     min-height: 300px;
+    max-height: min(700px, 80vh);
+    overflow-y: auto;
     box-shadow: var(--shadow);
+  }
+  .history-item-wrapper:not(:first-child) {
+    margin: 5px 0;
   }
   .history-item {
     padding: 14px 20px;
     border-radius: var(--radius-l);
     border: 1px solid var(--border);
-    transition: 0.1s;
     cursor: pointer;
     display: block;
-  }
-  .history-item:not(:first-child) {
-    margin: 5px 0;
-  }
-  .history-item a {
     text-decoration: none;
   }
   .history-item-name {
@@ -114,6 +115,9 @@
     font-size: 0.8rem;
     color: var(--fg-l2);
   }
+  .history-item-name .truncate {
+    --truncate-background: var(--bg-l1);
+  }
   .history-item-date {
     font: var(--font-quiet);
     color: var(--fg-l2);
@@ -123,6 +127,9 @@
     border: 1px solid var(--border-focus);
     box-shadow: var(--shadow);
   }
+  .history-item:hover .truncate {
+    --truncate-background: var(--bg-l2);
+  }
   .no-history {
     margin-top: 15px;
     text-align: center;
@@ -130,7 +137,6 @@
 
     color: var(--fg-l2);
   }
-
   .no-history .link {
     color: var(--fg-l1);
   }

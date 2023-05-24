@@ -1,26 +1,31 @@
 from sanic import Sanic
-from sanic.response import text, file 
+from sanic.response import text, file
 from sanic.log import logger
 from sanic import response
 from sanic_cors import CORS
 
 from pdfminer.high_level import extract_text
-from fpdf import FPDF
 
 import os
 import uuid
+import bisect
+import json
+import time
 
 from io import BytesIO
 
 import spacy
 import transformers
 
+
 app = Sanic("Summarizer")
 CORS(app)
+
 
 def read_pdf(file_path):
     text = extract_text(file_path)
     return text
+
 
 def summarize_pdf(text):
     nlp = spacy.load("en_core_web_sm")
@@ -28,86 +33,103 @@ def summarize_pdf(text):
     sentences = [sent.text for sent in doc.sents]
     processed_text = "\n".join(sentences)
 
-    model_name = "t5-large"
-    tokenizer = transformers.AutoTokenizer.from_pretrained(model_name, model_max_length=1024)
+    print(len(processed_text))
+    # model_name = "t5-large"
+    model_name = "t5-base"
+    tokenizer = transformers.AutoTokenizer.from_pretrained(
+        model_name, model_max_length=determine_max_length(processed_text))
     model = transformers.AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
-    inputs = tokenizer.encode(processed_text, return_tensors="pt", max_length=tokenizer.model_max_length, truncation=True)
-    summary_ids = model.generate(inputs, max_length=tokenizer.model_max_length, early_stopping=True)
+    inputs = tokenizer.encode(processed_text, return_tensors="pt",
+                              max_length=tokenizer.model_max_length, truncation=True)
+    summary_ids = model.generate(
+        inputs, max_length=tokenizer.model_max_length, early_stopping=True)
     summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
 
     return summary
 
+# Determine whether to use 1024, 2048, or
+# 4096 max_length to optimize performance
+def determine_max_length(text):
+    text_range = [1024, 2048, 4096]
+    found_length = bisect.bisect(text_range, len(text))
+    return text_range[found_length - 1]
+
+
 def remove_non_latin1_chars(text):
     return text.encode('latin-1', 'ignore').decode('latin-1')
 
-def write_pdf(file_path, title, text):
-    pdf = FPDF()
 
-    pdf.add_page()
-
-    pdf.set_font("Arial", style="B", size=22)
-    pdf.cell(0, 10, txt=title, ln=True, align="C")
-
-    pdf.ln(20)
-
-    pdf.set_font("Arial", size=12)
-
-    text = remove_non_latin1_chars(text)
-
-    lines = []
-    for line in text.split('\n'):
-        lines.extend(pdf.multi_cell(0, 10, txt=line))
-
-    total_lines = sum(lines)
-    line_height = 10  # Adjust line height
-
-    pdf.ln(total_lines * line_height)
-
-    if pdf.get_y() > 260:
-        pdf.add_page()
-
+def write_summarization(file_path, text, file):
+    if not os.path.exists('output'):
+        os.makedirs('output')
     output_path = os.path.join("output", file_path)
-    pdf.output(output_path)
+
+    f = open(output_path, "w")
+    f.write(json.dumps({ 'text': text, 'name': file.name.replace(".pdf", ""), 'date': round(time.time() * 1000) }))
+    f.close()
 
 
-@app.route('/summarize', methods=['POST'])
-async def summarize(request):
+def pdf_in_request(request):
     if not request.files or 'pdf_file' not in request.files:
-        return response.text('No pdf file uploaded!', 400)
+        return 'No pdf file uploaded!'
 
     pdf_file = request.files.get('pdf_file')
     file_type = pdf_file.name.rsplit(".", 1)[1].lower()
 
     if not pdf_file or file_type != "pdf":
-        return response.text('File uploaded is not a pdf file', 400)
+        return 'File uploaded is not a pdf file'
+
+    return pdf_file
+
+
+@app.route('/summarize', methods=['POST'])
+async def summarize(request):
+    is_pdf_in_request = pdf_in_request(request)
+    if type(is_pdf_in_request) == str:
+        return response.json({"message": is_pdf_in_request}, 400)
+
+    pdf_file = is_pdf_in_request
 
     try:
         text = read_pdf(BytesIO(pdf_file.body))
         summary = summarize_pdf(text)
 
         unique_id = str(uuid.uuid4())
-        output_pdf_path = f"{unique_id}.pdf"
-    
-        write_pdf(output_pdf_path, "Summarized File", summary)
+        output_text_path = f"{unique_id}.json"
+
+        write_summarization(output_text_path, summary, pdf_file)
 
         return response.json({"id": unique_id}, 200)
 
     except Exception as e:
         logger.error(f"Error during processing: {e}")
-        return response.text("An error occured durring processing", 500)
+        return response.json({"message": "An error occured durring processing"}, 500)
 
-@app.route('/pdf/<id>', methods=['GET'])
+
+@app.route('/summarization/<id>', methods=['GET'])
 async def get_pdf(request, id):
     try:
-        # decode bytes to string
-        output_pdf_path = f"output/{id}.pdf"
-
-        return await file(output_pdf_path, headers={"Content-Disposition": "inline"})
+        path = f"output/{id}.json"
+        f = open(path, "r")
+        info = json.loads(f.read())
+        print(info)
+        f.close()
+        return response.json({"text": info["text"], "name": info["name"], "date": info["date"]})
 
     except FileNotFoundError as e:
-        return response.text('File not found. It may have been deleted.', 500)
+        return response.json({"message": "File not found. It may have been deleted"}, 404)
 
+
+@app.route('/pdf-length', methods=['GET'])
+async def pdf_length(request):
+    is_pdf_in_request = pdf_in_request(request)
+    if type(is_pdf_in_request) == str:
+        return response.json({"message": is_pdf_in_request}, 400)
+
+    length = len(read_pdf(is_pdf_in_request))
+
+    return response.json({"length": len})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
