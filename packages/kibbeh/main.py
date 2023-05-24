@@ -28,12 +28,12 @@ def summarize_pdf(text):
     sentences = [sent.text for sent in doc.sents]
     processed_text = "\n".join(sentences)
 
-    model_name = "t5-base"
-    tokenizer = transformers.AutoTokenizer.from_pretrained(model_name)
+    model_name = "t5-large"
+    tokenizer = transformers.AutoTokenizer.from_pretrained(model_name, model_max_length=1024)
     model = transformers.AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
-    inputs = tokenizer.encode(processed_text, return_tensors="pt", max_length=512, truncation=True)
-    summary_ids = model.generate(inputs, max_length=512, early_stopping=True)
+    inputs = tokenizer.encode(processed_text, return_tensors="pt", max_length=tokenizer.model_max_length, truncation=True)
+    summary_ids = model.generate(inputs, max_length=tokenizer.model_max_length, early_stopping=True)
     summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
 
     return summary
