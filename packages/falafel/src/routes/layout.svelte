@@ -13,7 +13,7 @@
 
 <div class="app">
   <div
-    in:scale={{ ...SCALE_ANIMATION, delay: SCALE_ANIMATION.duration/2 }}
+    in:scale={{ ...SCALE_ANIMATION, delay: SCALE_ANIMATION.duration / 2 }}
     out:scale={SCALE_ANIMATION}
     class="container"
   >
