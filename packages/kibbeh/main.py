@@ -9,25 +9,11 @@ from fpdf import FPDF
 
 import os
 import uuid
-import json
 
-from io import StringIO
-from tempfile import NamedTemporaryFile
+from io import BytesIO, StringIO
 
 import redis
-from dotenv import load_dotenv
 import spacy
-
-load_dotenv()
-
-redis_password = os.getenv("REDIS_PASSWORD")
-
-r = redis.Redis(
-    host='trusty-shiner-35228.upstash.io',
-    port='35228',
-    password=redis_password,
-    ssl=True
-)
 
 app = Sanic("Summarizer")
 CORS(app)
@@ -75,7 +61,8 @@ def write_pdf(file_path, title, text):
     if pdf.get_y() > 260:
         pdf.add_page()
 
-    pdf.output(file_path)
+    output_path = os.path.join("output", file_path)
+    pdf.output(output_path)
 
 
 @app.route('/summarize', methods=['POST'])
@@ -89,21 +76,14 @@ async def summarize(request):
     if not pdf_file or file_type != "pdf":
         return response.text('File uploaded is not a pdf file', 400)
 
-    with NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
-        temp_file.write(pdf_file.body)
-        temp_pdf_path = temp_file.name
-
     try:
-        text = read_pdf(temp_pdf_path)
+        text = read_pdf(BytesIO(pdf_file.body))
         summary = summarize_pdf(text)
 
-        with NamedTemporaryFile(delete=False, suffix=".pdf") as output_temp_file:
-            output_pdf_path = output_temp_file.name
-
-        write_pdf(output_pdf_path, "Summarized File", summary)
-
         unique_id = str(uuid.uuid4())
-        r.set(unique_id, output_pdf_path)
+        output_pdf_path = f"{unique_id}.pdf"
+    
+        write_pdf(output_pdf_path, "Summarized File", summary)
 
         return response.json({"id": unique_id}, 200)
 
@@ -111,21 +91,17 @@ async def summarize(request):
         logger.error(f"Error during processing: {e}")
         return response.text("An error occured durring processing", 500)
 
-    finally:
-        os.remove(temp_pdf_path)
-
 @app.route('/pdf/<id>', methods=['GET'])
 async def get_pdf(request, id):
-    output_pdf_path = r.get(id)
-    if not output_pdf_path:
-        return json({'message': 'no file found for this id'}, 404)
+    try:
+        # decode bytes to string
+        output_pdf_path = f"output/{id}.pdf"
 
-    response = await file(output_pdf_path, headers={"Content-Disposition": "attachment"})
-    
-    # Delete the file after it has been served
-    os.remove(output_pdf_path)
+        return await file(output_pdf_path, headers={"Content-Disposition": "inline"})
 
-    return response 
+    except FileNotFoundError as e:
+        return response.text('File not found. It may have been deleted.', 500)
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
