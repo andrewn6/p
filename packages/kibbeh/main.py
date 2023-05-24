@@ -10,10 +10,10 @@ from fpdf import FPDF
 import os
 import uuid
 
-from io import BytesIO, StringIO
+from io import BytesIO
 
-import redis
 import spacy
+import transformers
 
 app = Sanic("Summarizer")
 CORS(app)
@@ -22,18 +22,24 @@ def read_pdf(file_path):
     text = extract_text(file_path)
     return text
 
-
 def summarize_pdf(text):
     nlp = spacy.load("en_core_web_sm")
     doc = nlp(text)
     sentences = [sent.text for sent in doc.sents]
-    summarized_text = ' '.join(sentences)  # Extract the sentences
-    return summarized_text
+    processed_text = "\n".join(sentences)
 
+    model_name = "t5-base"
+    tokenizer = transformers.AutoTokenizer.from_pretrained(model_name)
+    model = transformers.AutoModelForSeq2SeqLM.from_pretrained(model_name)
+
+    inputs = tokenizer.encode(processed_text, return_tensors="pt", max_length=512, truncation=True)
+    summary_ids = model.generate(inputs, num_beam=4, max_lengths=150, early_stopping=True)
+    summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+
+    return summary
 
 def remove_non_latin1_chars(text):
     return text.encode('latin-1', 'ignore').decode('latin-1')
-
 
 def write_pdf(file_path, title, text):
     pdf = FPDF()
