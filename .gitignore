@@ -1,3 +1,7 @@
 __pycache__
 .DS_Store
 .env
+
+output
+output/*.pdf
+output/*.txt
