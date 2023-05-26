@@ -10,6 +10,7 @@
 <svelte:element
   this={link ? "a" : "button"}
   {...{ href: link }}
+  {...{ disabled: inProgress || null }}
   class="button"
   class:primary
   class:inProgress
@@ -68,6 +69,7 @@
     box-shadow: 0 0 0 0 transparent;
   }
   .button.inProgress {
+    opacity: 1;
     position: relative;
     z-index: 1;
     background: var(--bg-l2);

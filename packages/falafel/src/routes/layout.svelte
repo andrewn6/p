@@ -1,24 +1,34 @@
 <script lang="ts">
   import { scale } from "../animations";
-
+  import { beforeNavigate } from "$app/navigation";
+  
   export let back = false;
 
-  const SCALE_ANIMATION = {
+  let scaleAnimation = {
     duration: 300,
     factor: 0.05,
+    // these two properties are set blindly, which causes issues when
+    // moving backwards in browser history, i.e. when delta is negative
     isReversed: back ? 1 : 0,
     offset: back ? 0.05 : 0,
   };
+
+  beforeNavigate(async (navigation) => {
+    scaleAnimation.isReversed = navigation.delta === -1 ? 1 : 0;
+    scaleAnimation.offset = navigation.delta === -1 ? 0.05 : 0;
+  });
 </script>
 
 <div class="app">
   <div
-    in:scale={{ ...SCALE_ANIMATION, delay: SCALE_ANIMATION.duration / 2 }}
-    out:scale={SCALE_ANIMATION}
+    in:scale={{ ...scaleAnimation, delay: scaleAnimation.duration / 2 }}
+    out:scale={scaleAnimation}
     class="container"
   >
     {#if back}
-      <h2 class="subheading"><a href="javascript:history.back()" class="link-back">Back</a></h2>
+      <h2 class="subheading">
+        <a href="javascript:history.back()" class="link-back">Back</a>
+      </h2>
     {/if}
     <h1 class="heading"><slot name="heading" /></h1>
     <main><slot /></main>

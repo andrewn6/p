@@ -47,6 +47,7 @@
       // menu instead of back to "summarize a pdf"
       goto(`/summarization/${json.id}`, { replaceState: true });
     } else {
+      loading = false;
       alert(
         `an error has occured!!!!!!!!! and idk what it is :O\nthis is a temporary alert until I have a nice error popup`
       );
