@@ -1,7 +1,6 @@
 uuid
 python-dotenv
 pdfminer-six
-fpdf
 spacy
 sanic
 sanic_cors
