@@ -1,37 +1,47 @@
 <script lang="ts">
   import { scale } from "../animations";
-  import { beforeNavigate } from "$app/navigation";
-  
+  import { get, writable } from "svelte/store";
+  import { afterNavigate, beforeNavigate } from "$app/navigation";
+  import { currentAnimationDirection, direction } from "../stores";
   export let back = false;
 
-  let scaleAnimation = {
+  beforeNavigate(async (navigation) => {
+    direction.set(navigation.delta || 1);
+    currentAnimationDirection.set(navigation.delta || 1);
+  });
+  const SCALE_AMT = 0.03;
+  let baseScaleAnimation = {
     duration: 300,
-    factor: 0.05,
+    factor: SCALE_AMT,
     // these two properties are set blindly, which causes issues when
     // moving backwards in browser history, i.e. when delta is negative
-    isReversed: back ? 1 : 0,
-    offset: back ? 0.05 : 0,
+    isReversed: get(currentAnimationDirection) === -1 ? 1 : 0,
+    offset: get(currentAnimationDirection) === -1 ? SCALE_AMT : 0,
   };
-
-  beforeNavigate(async (navigation) => {
-    scaleAnimation.isReversed = navigation.delta === -1 ? 1 : 0;
-    scaleAnimation.offset = navigation.delta === -1 ? 0.05 : 0;
-  });
 </script>
 
 <div class="app">
   <div
-    in:scale={{ ...scaleAnimation, delay: scaleAnimation.duration / 2 }}
-    out:scale={scaleAnimation}
+    in:scale={{
+      ...baseScaleAnimation,
+      delay: 150,
+      isReversed: get(currentAnimationDirection) !== -1 ? 1 : 0,
+      offset: get(currentAnimationDirection) !== -1 ? SCALE_AMT : 0,
+    }}
+    out:scale={{
+      ...baseScaleAnimation,
+      isReversed: get(currentAnimationDirection) === -1 ? 1 : 0,
+      offset: get(currentAnimationDirection) === -1 ? SCALE_AMT : 0,
+    }}
     class="container"
   >
     {#if back}
-      <h2 class="subheading">
-        <a href="javascript:history.back()" class="link-back">Back</a>
-      </h2>
+      <a href="javascript:history.back()" class="link-back subheading">Back</a>
     {/if}
-    <h1 class="heading"><slot name="heading" /></h1>
-    <main><slot /></main>
+    <main>
+      <h1 class="heading"><slot name="heading" /></h1>
+      <slot />
+    </main>
   </div>
 </div>
 
@@ -122,6 +132,10 @@
 
   .link-back:hover::before {
     translate: -4px 0;
+  }
+
+  .link-back:active {
+    scale: 0.99;
   }
 
   .link {

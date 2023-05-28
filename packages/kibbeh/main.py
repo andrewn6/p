@@ -118,7 +118,6 @@ async def get_pdf(request, id):
         path = f"output/{id}.json"
         f = open(path, "r")
         info = json.loads(f.read())
-        print(info)
         f.close()
         return response.json({"text": info["text"], "name": info["name"], "date": info["date"]})
 
@@ -134,7 +133,7 @@ async def pdf_length(request):
 
     length = len(read_pdf(is_pdf_in_request))
 
-    return response.json({"length": len})
+    return response.json({"length": length})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)

@@ -60,13 +60,14 @@
       style="margin: 0 10px"
     >
       drop a file here, or <label for="fileUpload" class="link"
-        >browse your computer</label
-      >
+          >browse your computer</label
+        >
     </p>
   {/if}
   <input
     type="file"
     id="fileUpload"
+
     on:input={(e) => {
       // Ignore these because svelte does not have TypeScript support in markup template
       // https://github.com/sveltejs/svelte/issues/4701
@@ -75,7 +76,7 @@
       // @ts-ignore
       updateSelectedFile(Array.from(e.target.files));
     }}
-    style="display: none"
+    style="position: fixed; opacity: 0; pointer-events: none"
   />
 </div>
 
@@ -111,6 +112,7 @@
   .selected-file {
     padding: 10px;
     width: 100%;
+    max-width: 500px;
     background: var(--bg-l2);
     border-radius: var(--radius-m);
   }
