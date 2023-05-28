@@ -40,6 +40,10 @@
     return ""; // if it somehow failed
   };
 
+  function getISODate(date: number) {
+    return new Date(date).toISOString().split("T")[0];
+  }
+
   onMount(() => {
     const interval = setInterval(() => {
       time = new Date();
@@ -57,16 +61,21 @@
     {#if items}
       {#each items as item}
         <li class="history-item-wrapper">
-          <a class="history-item" href={`/summarization/${item.id}`}>
+          <a
+            class="history-item"
+            aria-label={`${item.name}.pdf. Summarized ${getRelativeTime(
+              new Date(item.date),
+              new Date(now)
+            )}`}
+            href={`/summarization/${item.id}`}
+          >
             <span class="history-item-name">
               <Truncator>{item.name}</Truncator><small>.pdf</small>
             </span>
             <span class="history-item-date">
-              {getRelativeTime(new Date(item.date), new Date(now))} • {new Date(
+              {getRelativeTime(new Date(item.date), new Date(now))} • {getISODate(
                 item.date
-              )
-                .toISOString()
-                .split("T")[0]}
+              )}
             </span>
           </a>
         </li>
@@ -85,7 +94,6 @@
   .history-container {
     padding: 8px;
     border: 1px solid var(--border);
-    background: var(--bg-l1);
     border-radius: var(--radius-l);
     width: 100%;
     margin: 10px 0;
@@ -103,7 +111,12 @@
     border: 1px solid var(--border);
     cursor: pointer;
     display: block;
+    background: var(--bg-l1);
     text-decoration: none;
+    transition: 0.1s;
+  }
+  .history-item:active {
+    scale: 0.99;
   }
   .history-item-name {
     font-weight: 600;

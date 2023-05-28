@@ -32,7 +32,7 @@
   }
 </script>
 
-<span use:setTruncationStatus><slot /></span>
+<span style="white-space: nowrap" use:setTruncationStatus><slot /></span>
 
 <style>
   span {

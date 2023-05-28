@@ -3,6 +3,7 @@
   import { API_URL } from "../../../constants";
   import type { PDFHistory, PDFHistoryItem } from "../../history/+page.svelte";
   import Layout from "../../layout.svelte";
+  import Icon from "@components/Icon.svelte";
 
   export let data;
 
@@ -19,10 +20,14 @@
   })();
 
   async function fetchSummarizationMetadata() {
-    const req = await fetch(`${API_URL}/summarization/${data.id}`);
-    const text = await req.json();
-    if (text.text) return text;
-    else throw new Error("no summarization found");
+    try {
+      const req = await fetch(`${API_URL}/summarization/${data.id}`);
+      const text = await req.json();
+      if (text.text) return text;
+      else throw new Error("no summarization found");
+    } catch (err) {
+      console.error(err);
+    }
   }
 </script>
 
@@ -36,6 +41,10 @@
         .split("T")[0]}</small
     >
     <div class="summarization-viewer">{summarization.text}</div>
+  {:else}
+    <p class="not-found">
+      <Icon color="var(--fg-error)" name="warning" /> Could not find summarization
+    </p>
   {/if}
 </Layout>
 
@@ -54,5 +63,11 @@
     line-height: 1.7;
     min-height: 400px;
     color: var(--fg-l1);
+  }
+  .not-found {
+    display: flex;
+    gap: 5px;
+    color: var(--fg-error);
+    font-style: italic;
   }
 </style>

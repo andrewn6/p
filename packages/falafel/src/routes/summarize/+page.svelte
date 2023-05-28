@@ -27,12 +27,7 @@
 
     const formData = new FormData();
     formData.append("pdf_file", file);
-    const req = await fetch(`${API_URL}/summarize`, {
-      method: "POST",
-      body: formData,
-    });
-
-    const json = await req.json();
+    const json = await trySummarize(formData);
     if (json.id) {
       let storedHistory = localStorage.getItem("history") || "[]";
       let history: PDFHistory = JSON.parse(storedHistory);
@@ -50,6 +45,22 @@
       loading = false;
       alert(
         `an error has occured!!!!!!!!! and idk what it is :O\nthis is a temporary alert until I have a nice error popup`
+      );
+    }
+  }
+
+  async function trySummarize(formData: FormData) {
+    try {
+      const req = await fetch(`${API_URL}/summarize`, {
+        method: "POST",
+        body: formData,
+      });
+      const json = await req.json();
+      return json;
+    } catch (err) {
+      loading = false;
+      alert(
+        `an API error has occured (replace this with a nice error popup component)`
       );
     }
   }
