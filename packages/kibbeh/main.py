@@ -34,7 +34,7 @@ def summarize_pdf(text):
     processed_text = "\n".join(sentences)
 
     print(len(processed_text))
-    model_name = "facebook/bart-large-cnn"
+    model_name = "facebook/bart-base"
     tokenizer = transformers.AutoTokenizer.from_pretrained(
         model_name)
     model = transformers.AutoModelForSeq2SeqLM.from_pretrained(model_name)
@@ -45,7 +45,7 @@ def summarize_pdf(text):
 
     for chunk in text_chunks:
          inputs = tokenizer.encode(chunk, return_tensors="pt", truncation=True)
-         summary_ids = model.generate(inputs, early_stopping=True)
+         summary_ids = model.generate(inputs, num_beams=4, max_length=60, min_length=30, length_penalty=2.0, early_stopping=True)
          summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
          summaries.append(summary)
 
