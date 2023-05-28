@@ -34,19 +34,24 @@ def summarize_pdf(text):
     processed_text = "\n".join(sentences)
 
     print(len(processed_text))
-    # model_name = "t5-large"
-    model_name = "t5-base"
+    model_name = "facebook/bart-large-cnn"
     tokenizer = transformers.AutoTokenizer.from_pretrained(
-        model_name, model_max_length=determine_max_length(processed_text))
+        model_name)
     model = transformers.AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
-    inputs = tokenizer.encode(processed_text, return_tensors="pt",
-                              max_length=tokenizer.model_max_length, truncation=True)
-    summary_ids = model.generate(
-        inputs, max_length=tokenizer.model_max_length, early_stopping=True)
-    summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+    max_chunk_size = 512
+    text_chunks = [processed_text[i: i + max_chunk_size] for i in range(0, len(processed_text), max_chunk_size)]
+    summaries = []
 
-    return summary
+    for chunk in text_chunks:
+         inputs = tokenizer.encode(chunk, return_tensors="pt", truncation=True)
+         summary_ids = model.generate(inputs, early_stopping=True)
+         summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+         summaries.append(summary)
+
+    completed_summary = " ".join(summaries)
+
+    return completed_summary
 
 # Determine whether to use 1024, 2048, or
 # 4096 max_length to optimize performance
