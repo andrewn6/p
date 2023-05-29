@@ -28,9 +28,10 @@ def read_pdf(file_path):
     return text
 
 def clean_text(text):
-    cleaned_text = re.sub('[^A-Za-z0-9.,!? ]+', '', text)
+    text = text.replace("Â", "")
+    cleaned_text = re.sub('[^A-Za-z0-9.,!? \n]+', '', text)
     cleaned_text = re.sub(' +', ' ', cleaned_text)
-    return cleaned_text
+    return cleaned_text.strip()
 
 def summarize_pdf(text):
     nlp = spacy.load("en_core_web_sm")
@@ -44,13 +45,13 @@ def summarize_pdf(text):
         model_name)
     model = transformers.AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
-    max_chunk_size = 512
+    max_chunk_size = 1024
     text_chunks = [processed_text[i: i + max_chunk_size] for i in range(0, len(processed_text), max_chunk_size)]
     summaries = []
 
     for chunk in text_chunks:
          inputs = tokenizer.encode(chunk, return_tensors="pt", truncation=True)
-         summary_ids = model.generate(inputs, num_beams=4, max_length=30, min_length=10, length_penalty=2.0, early_stopping=True)
+         summary_ids = model.generate(inputs, num_beams=4, max_length=25, min_length=10, length_penalty=2.0, early_stopping=True)
          summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
          summaries.append(summary)
 
