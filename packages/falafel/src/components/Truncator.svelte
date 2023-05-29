@@ -50,6 +50,7 @@
     mask-image: linear-gradient(to right, white 80%, transparent 100%);
     text-indent: 0px;
     transition: text-indent 0.3s ease-in-out;
+    cursor: default;
   }
 
   :global(.truncate:hover) {

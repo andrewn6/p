@@ -1,23 +1,23 @@
 <script lang="ts">
   import { scale } from "../animations";
-  import { get, writable } from "svelte/store";
-  import { afterNavigate, beforeNavigate } from "$app/navigation";
   import { currentAnimationDirection, direction } from "../stores";
+  
+  import { get } from "svelte/store";
+  import { beforeNavigate } from "$app/navigation";
   export let back = false;
+
+  const SCALE_AMT = 0.03;
+  let baseScaleAnimation = {
+    duration: 300,
+    factor: SCALE_AMT,
+    isReversed: get(currentAnimationDirection) === -1 ? 1 : 0,
+    offset: get(currentAnimationDirection) === -1 ? SCALE_AMT : 0,
+  };
 
   beforeNavigate(async (navigation) => {
     direction.set(navigation.delta || 1);
     currentAnimationDirection.set(navigation.delta || 1);
   });
-  const SCALE_AMT = 0.03;
-  let baseScaleAnimation = {
-    duration: 300,
-    factor: SCALE_AMT,
-    // these two properties are set blindly, which causes issues when
-    // moving backwards in browser history, i.e. when delta is negative
-    isReversed: get(currentAnimationDirection) === -1 ? 1 : 0,
-    offset: get(currentAnimationDirection) === -1 ? SCALE_AMT : 0,
-  };
 </script>
 
 <div class="app">
@@ -113,6 +113,13 @@
   .transition-enforcement > * {
     grid-column: 1/2;
     grid-row: 1/2;
+  }
+
+  button {
+    padding: 0;
+    background: 0;
+    border: 0;
+    cursor: pointer;
   }
 
   .link-back {

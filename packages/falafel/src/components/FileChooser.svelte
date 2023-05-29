@@ -1,8 +1,12 @@
 <script lang="ts">
   import { scale } from "../animations";
+  import { Popup, PopupType } from "./PopupManager";
+  import Truncator from "./Truncator.svelte";
 
+  export let allowed: string[] = ["application/pdf"];
   export let selectedPDF: File | null,
     active: boolean = false;
+
   function handleDragEnter() {
     active = true;
   }
@@ -30,8 +34,8 @@
   }
   function updateSelectedFile(files: File[] | null) {
     const file = files && files[0];
-    if (file && file.type !== "application/pdf")
-      return alert("Please only drop PDFs");
+    if (file && !allowed.includes(file.type))
+      return new Popup("Currently, only PDFs are supported", PopupType.Error, 7000, "Error uploading file").show();
 
     selectedPDF = file!;
   }
@@ -51,7 +55,7 @@
       out:scale={{ duration: 300, isReversed: 1, offset: 0.1 }}
       class="selected-file"
     >
-      {selectedPDF.name}
+      <Truncator breakpoint={400}>{selectedPDF.name.split(".").slice(0, -1)}</Truncator><p>.{selectedPDF.name.split(".").slice(-1)}</p>
     </div>
   {:else}
     <p
@@ -67,7 +71,7 @@
   <input
     type="file"
     id="fileUpload"
-
+    accept={allowed.join(", ")}
     on:input={(e) => {
       // Ignore these because svelte does not have TypeScript support in markup template
       // https://github.com/sveltejs/svelte/issues/4701
@@ -115,5 +119,6 @@
     max-width: 500px;
     background: var(--bg-l2);
     border-radius: var(--radius-m);
+    display: flex;
   }
 </style>

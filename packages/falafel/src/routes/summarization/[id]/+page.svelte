@@ -4,6 +4,7 @@
   import type { PDFHistory, PDFHistoryItem } from "../../history/+page.svelte";
   import Layout from "../../layout.svelte";
   import Icon from "@components/Icon.svelte";
+  import { PopupType, Popup } from "@components/PopupManager";
 
   export let data;
 
@@ -14,8 +15,6 @@
       (pdf: { id: string }) => data.id === pdf.id
     );
     correspondingPDF = await fetchSummarizationMetadata();
-    if (!correspondingPDF) throw new Error("The file could not be found"); // todo: error component
-
     summarization = correspondingPDF;
   })();
 
@@ -24,9 +23,18 @@
       const req = await fetch(`${API_URL}/summarization/${data.id}`);
       const text = await req.json();
       if (text.text) return text;
-      else throw new Error("no summarization found");
     } catch (err) {
+      console.warn(err);
+    }
+  }
+
+  async function copySummarization() {
+    try {
+      await navigator.clipboard.writeText(summarization.text);
+      new Popup("Copied summarization to clipboard", PopupType.Success, 6000, "Success").show();
+    } catch(err) {
       console.error(err);
+      new Popup("Could not copy to clipboard", PopupType.Error, 6000, "Error").show();
     }
   }
 </script>
@@ -40,7 +48,11 @@
         .toISOString()
         .split("T")[0]}</small
     >
-    <div class="summarization-viewer">{summarization.text}</div>
+    <div class="summarization-viewer">
+      <div class="controls">
+        <button on:click={copySummarization} aria-label="Copy summarization to clipboard"><Icon color="var(--border)" name="copy"/></button>
+      </div>
+      {summarization.text}</div>
   {:else}
     <p class="not-found">
       <Icon color="var(--fg-error)" name="warning" /> Could not find summarization
@@ -63,11 +75,23 @@
     line-height: 1.7;
     min-height: 400px;
     color: var(--fg-l1);
+    position: relative;
   }
   .not-found {
     display: flex;
     gap: 5px;
     color: var(--fg-error);
     font-style: italic;
+  }
+  .controls {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background: white;
+    box-shadow: 0 0 5px white;
+  }
+
+  :global(.controls button:hover div) {
+    background-color: var(--fg-l2) !important;
   }
 </style>

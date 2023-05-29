@@ -12,6 +12,7 @@
     vertical-align: text-bottom;
     color: var(--fg-l2) !important;
     -webkit-mask: var(--icon) no-repeat center;
+    -webkit-mask-size: contain;
     mask: var(--icon) no-repeat center;
     background-color: black;
   }

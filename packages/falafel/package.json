@@ -10,12 +10,14 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig tsconfig.json --watch"
   },
   "devDependencies": {
-    "@sveltejs/adapter-static": "^2.0.2",
     "@sveltejs/kit": "^1.18.0",
     "svelte": "^3.55.1",
     "svelte-preprocess": "^5.0.3",
     "typescript": "^5.0.4",
     "vite": "^4.0.4"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@sveltejs/adapter-auto": "^2.1.0"
+  }
 }
