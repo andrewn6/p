@@ -10,6 +10,7 @@ import os
 import uuid
 import bisect
 import json
+import re
 import time
 
 from io import BytesIO
@@ -26,11 +27,15 @@ def read_pdf(file_path):
     text = extract_text(file_path)
     return text
 
+def clean_text(text):
+    cleaned_text = re.sub('[^A-Za-z0-9.,!? ]+', '', text)
+    cleaned_text = re.sub(' +', ' ', cleaned_text)
+    return cleaned_text
 
 def summarize_pdf(text):
     nlp = spacy.load("en_core_web_sm")
     doc = nlp(text)
-    sentences = [sent.text for sent in doc.sents]
+    sentences = [clean_text(sent.text) for sent in doc.sents]
     processed_text = "\n".join(sentences)
 
     print(len(processed_text))
@@ -45,7 +50,7 @@ def summarize_pdf(text):
 
     for chunk in text_chunks:
          inputs = tokenizer.encode(chunk, return_tensors="pt", truncation=True)
-         summary_ids = model.generate(inputs, num_beams=4, max_length=60, min_length=30, length_penalty=2.0, early_stopping=True)
+         summary_ids = model.generate(inputs, num_beams=4, max_length=30, min_length=10, length_penalty=2.0, early_stopping=True)
          summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
          summaries.append(summary)
 
