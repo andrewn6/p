@@ -44,7 +44,7 @@
       goto(`/summarization/${json.id}`, { replaceState: true });
     } else {
       loading = false;
-      new Popup("Client-side error or API did not respond", PopupType.Error, 6000, "Error")
+      new Popup("Client-side error or API did not respond", PopupType.Error, 6000, "Error").show();
     }
   }
 
@@ -61,7 +61,7 @@
       if (!(err instanceof Error)) {
         err = new Error(err.toString());
       }
-      new Popup(err.message, PopupType.Error, 6000, "API error");
+      new Popup(err.message, PopupType.Error, 6000, "API error").show();
     }
   }
 </script>
