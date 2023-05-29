@@ -6,6 +6,7 @@
   import Layout from "../layout.svelte";
   import { API_URL } from "../../constants";
   import type { PDFHistory } from "../history/+page.svelte";
+  import { Popup, PopupType } from "@components/PopupManager";
 
   let selectedPDF: File | null = null;
   let loading: boolean = false;
@@ -43,9 +44,7 @@
       goto(`/summarization/${json.id}`, { replaceState: true });
     } else {
       loading = false;
-      alert(
-        `an error has occured!!!!!!!!! and idk what it is :O\nthis is a temporary alert until I have a nice error popup`
-      );
+      new Popup("Client-side error or API did not respond", PopupType.Error, 6000, "Error")
     }
   }
 
@@ -57,11 +56,12 @@
       });
       const json = await req.json();
       return json;
-    } catch (err) {
+    } catch (err: any) {
       loading = false;
-      alert(
-        `an API error has occured (replace this with a nice error popup component)`
-      );
+      if (!(err instanceof Error)) {
+        err = new Error(err.toString());
+      }
+      new Popup(err.message, PopupType.Error, 6000, "API error");
     }
   }
 </script>

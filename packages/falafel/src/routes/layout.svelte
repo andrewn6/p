@@ -36,6 +36,7 @@
     class="container"
   >
     {#if back}
+      <!-- TODO find a better way to do this -->
       <a href="javascript:history.back()" class="link-back subheading">Back</a>
     {/if}
     <main>
