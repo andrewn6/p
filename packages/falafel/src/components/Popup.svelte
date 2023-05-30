@@ -30,6 +30,7 @@
 
   .popup {
     width: fit-content;
+    min-width: 200px;
     margin: 4px;
     padding: 7px 14px;
     background: var(--bg-l1);

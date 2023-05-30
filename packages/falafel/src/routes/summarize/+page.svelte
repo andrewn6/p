@@ -62,6 +62,7 @@
         err = new Error(err.toString());
       }
       new Popup(err.message, PopupType.Error, 6000, "API error").show();
+      return {};
     }
   }
 </script>

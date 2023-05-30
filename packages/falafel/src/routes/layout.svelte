@@ -1,23 +1,62 @@
 <script lang="ts">
   import { scale } from "../animations";
-  import { currentAnimationDirection, direction } from "../stores";
-  
-  import { get } from "svelte/store";
+  import { lastNavigationDelta } from "../stores";
+  import { page } from "$app/stores";
   import { beforeNavigate } from "$app/navigation";
+  import { pageStructure } from "../constants";
+
   export let back = false;
 
   const SCALE_AMT = 0.03;
   let baseScaleAnimation = {
     duration: 300,
     factor: SCALE_AMT,
-    isReversed: get(currentAnimationDirection) === -1 ? 1 : 0,
-    offset: get(currentAnimationDirection) === -1 ? SCALE_AMT : 0,
+    isReversed: $lastNavigationDelta === -1 ? 1 : 0,
+    offset: $lastNavigationDelta === -1 ? SCALE_AMT : 0,
   };
 
   beforeNavigate(async (navigation) => {
-    direction.set(navigation.delta || 1);
-    currentAnimationDirection.set(navigation.delta || 1);
+    lastNavigationDelta.set(
+      determineNavigationDelta(
+        navigation.from?.route.id,
+        navigation.to?.route.id
+      )
+    );
   });
+
+  function arraysEqual(a: any[], b: any[]) {
+    for (var i = 0; i < a.length; ++i) if (a[i] !== b[i]) return false;
+    return true;
+  }
+
+  function determineNavigationDelta(
+    from: string | undefined | null,
+    to: string | undefined | null
+  ): 1 | -1 {
+    // Find all candidates for fromRoute and toRoute
+    // example: if we are going `from` / `to` /history,
+    // fromRoute = [["/", "/"], ["/summarize", "/"], ["/history", "/"]]
+    let fromRoute = pageStructure.filter((arr) => arr.includes(from || "/"));
+    // toRoute = [["/history", "/"], ["/summarization/[id]", "/history"]]
+    let toRoute = pageStructure.filter((arr) => arr.includes(to || "/"));
+
+    // highlight everything in fromRoute that toRoute also has
+    let match = fromRoute.find((route) => toRoute.includes(route)) || [];
+
+    // now determine direction
+    if (arraysEqual([from, to], match)) return 1;
+    else if (arraysEqual([to, from], match)) return -1;
+    // If this navigation checks none of our boxes, assume we're going back
+    else return -1;
+  }
+
+  function determinePreviousPage(): string {
+    let previousPage = pageStructure.find(
+      (arr) => arr[1] === $page.route.id
+    ) || ["/"];
+    return previousPage[0];
+  }
+
 </script>
 
 <div class="app">
@@ -25,19 +64,19 @@
     in:scale={{
       ...baseScaleAnimation,
       delay: 150,
-      isReversed: get(currentAnimationDirection) !== -1 ? 1 : 0,
-      offset: get(currentAnimationDirection) !== -1 ? SCALE_AMT : 0,
+      isReversed: $lastNavigationDelta !== -1 ? 1 : 0,
+      offset: $lastNavigationDelta !== -1 ? SCALE_AMT : 0,
     }}
     out:scale={{
       ...baseScaleAnimation,
-      isReversed: get(currentAnimationDirection) === -1 ? 1 : 0,
-      offset: get(currentAnimationDirection) === -1 ? SCALE_AMT : 0,
+      isReversed: $lastNavigationDelta === -1 ? 1 : 0,
+      offset: $lastNavigationDelta === -1 ? SCALE_AMT : 0,
     }}
     class="container"
   >
     {#if back}
       <!-- TODO find a better way to do this -->
-      <a href="javascript:history.back()" class="link-back subheading">Back</a>
+      <a href={determinePreviousPage()} class="link-back subheading">Back</a>
     {/if}
     <main>
       <h1 class="heading"><slot name="heading" /></h1>
