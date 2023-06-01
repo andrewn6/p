@@ -11,6 +11,7 @@ import uuid
 import bisect
 import json
 import re
+from nltk.tokenize import word_tokenize
 import time
 
 from io import BytesIO
@@ -22,28 +23,34 @@ import transformers
 app = Sanic("Summarizer")
 CORS(app)
 
+model_name = "facebook/bart-base"
+
+tokenizer = transformers.AutoTokenizer.from_pretrained(model_name)
+model = transformers.AutoModelForSeq2SeqLM.from_pretrained(model_name)
+
+nlp = spacy.load("en_core_web_sm")
 
 def read_pdf(file_path):
     text = extract_text(file_path)
     return text
 
 def clean_text(text):
-    text = text.replace("Â", "")
-    cleaned_text = re.sub('[^A-Za-z0-9.,!? \n]+', '', text)
-    cleaned_text = re.sub(' +', ' ', cleaned_text)
-    return cleaned_text.strip()
+  stop_words = set(stopwords.words('english'))
 
-def summarize_pdf(text):
-    nlp = spacy.load("en_core_web_sm")
+  text = text.lower()
+
+  word_tokens = word_tokenize(text)
+
+  filtered_text = [word for word in word_tokens if word.isalnum() and not word in stop_word]
+  
+  text = ' '.join(filtered_text)
+
+  return text.strip()
+
+def summarize_pdf(text): 
     doc = nlp(text)
     sentences = [clean_text(sent.text) for sent in doc.sents]
     processed_text = "\n".join(sentences)
-
-    print(len(processed_text))
-    model_name = "facebook/bart-base"
-    tokenizer = transformers.AutoTokenizer.from_pretrained(
-        model_name)
-    model = transformers.AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
     max_chunk_size = 1024
     text_chunks = [processed_text[i: i + max_chunk_size] for i in range(0, len(processed_text), max_chunk_size)]
@@ -51,7 +58,7 @@ def summarize_pdf(text):
 
     for chunk in text_chunks:
          inputs = tokenizer.encode(chunk, return_tensors="pt", truncation=True)
-         summary_ids = model.generate(inputs, num_beams=4, max_length=25, min_length=10, length_penalty=2.0, early_stopping=True)
+         summary_ids = model.generate(inputs, num_beams=4, max_length=100, min_length=10, length_penalty=2.0, early_stopping=True)
          summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
          summaries.append(summary)
 
