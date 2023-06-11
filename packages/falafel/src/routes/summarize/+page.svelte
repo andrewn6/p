@@ -4,38 +4,40 @@
   import Button from "@components/Button.svelte";
   import FileChooser from "@components/FileChooser.svelte";
   import Layout from "../layout.svelte";
-  import { API_URL } from "../../constants";
-  import type { PDFHistory } from "../history/+page.svelte";
+  import { API_URL, allowedFileTypes } from "../../constants";
+  import type { SummarizationHistory as SummarizationHistory } from "../history/+page.svelte";
   import { Popup, PopupType } from "@components/PopupManager";
 
-  let selectedPDF: File | null = null;
+  let selectedFile: File | null = null;
   let loading: boolean = false;
   $: disabled = !(
-    selectedPDF &&
-    selectedPDF.type === "application/pdf" &&
+    selectedFile &&
+    allowedFileTypes.includes(selectedFile.type) &&
     true
   );
 
   async function summarize(file: File | null) {
     if (!file) return;
-    // check, again, if the file is a pdf
+    // check, again, if the file is valid
     // it's safe to not notify the user, only devs like you
     // will be able to bypass the checks above (somehow)...
-    if (file.type !== "application/pdf")
-      throw new Error("I told you already, only PDFs! 😭");
+    if (!allowedFileTypes.includes(file.type))
+      throw new Error("I told you already, only PDFs/PPTXs! 😭");
 
     loading = true;
 
     const formData = new FormData();
-    formData.append("pdf_file", file);
+    formData.append("file", file);
     const json = await trySummarize(formData);
     if (json.id) {
       let storedHistory = localStorage.getItem("history") || "[]";
-      let history: PDFHistory = JSON.parse(storedHistory);
+      let history: SummarizationHistory = JSON.parse(storedHistory);
+      let splitFilename = file.name.split(".");
       history.push({
-        name: file.name.replace(".pdf", ""),
+        name: splitFilename.slice(0, -1).join("."),
         id: json.id,
         date: Date.now(),
+        ext: splitFilename.at(-1) || ""
       });
       localStorage.setItem("history", JSON.stringify(history));
       // once done summarizing the pdf, when the user
@@ -69,9 +71,9 @@
 
 <Layout back>
   <svelte:fragment slot="heading">New PDF</svelte:fragment>
-  <FileChooser bind:selectedPDF />
+  <FileChooser bind:selectedFile={selectedFile} />
   <Button
-    on:click={() => summarize(selectedPDF)}
+    on:click={() => summarize(selectedFile)}
     disabled={disabled || null}
     primary
     inProgress={loading}

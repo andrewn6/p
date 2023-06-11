@@ -4,6 +4,7 @@
   import { page } from "$app/stores";
   import { beforeNavigate } from "$app/navigation";
   import { pageStructure } from "../constants";
+  import Icon from "@components/Icon.svelte";
 
   export let back = false;
 
@@ -56,7 +57,6 @@
     ) || ["/"];
     return previousPage[0];
   }
-
 </script>
 
 <div class="app">
@@ -75,8 +75,10 @@
     class="container"
   >
     {#if back}
-      <!-- TODO find a better way to do this -->
-      <a href={determinePreviousPage()} class="link-back subheading">Back</a>
+      <a href={determinePreviousPage()} class="link-back subheading">
+        <span class="back-icon"><Icon color="var(--fg-l2)" name="back" /></span
+        >Back
+      </a>
     {/if}
     <main>
       <h1 class="heading"><slot name="heading" /></h1>
@@ -164,25 +166,32 @@
 
   .link-back {
     transition: 0.2s;
+    display: inline-block;
   }
 
   .link-back:hover {
     color: var(--fg-l1);
   }
 
-  .link-back::before {
+  .link-back .back-icon {
     display: inline-block;
     content: "←";
     margin-right: 0.3em;
-    transition: 0.2s translate;
+    vertical-align: middle;
+    margin-top: -0.3em;
+    transition: 0.2s translate, 0.2s background-color;
   }
 
-  .link-back:hover::before {
+  .link-back:hover .back-icon {
     translate: -4px 0;
   }
 
+  .link-back:hover .back-icon :global(div) {
+    background-color: var(--fg-l1) !important;
+  }
+
   .link-back:active {
-    scale: 0.99;
+    scale: 0.97;
   }
 
   .link {

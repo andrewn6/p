@@ -1,18 +1,19 @@
 <script context="module" lang="ts">
-  export type PDFHistoryItem = { name: string; id: string; date: number };
-  export type PDFHistory = PDFHistoryItem[];
+  export type SummarizationHistoryItem = { ext: string; name: string; id: string; date: number };
+  export type SummarizationHistory = SummarizationHistoryItem[];
 </script>
 
 <script lang="ts">
   import { onMount } from "svelte";
   import Layout from "../layout.svelte";
   import Truncator from "@components/Truncator.svelte";
+  import { invalid_attribute_name_character } from "svelte/internal";
 
   let time = new Date();
   $: now = time.getTime();
 
   let history = localStorage.getItem("history");
-  let items: PDFHistory | false = history && JSON.parse(history);
+  let items: SummarizationHistory | false = history && JSON.parse(history);
   if (items) items.sort((a, b) => (a.date < b.date ? 1 : -1));
 
   const units = {
@@ -63,14 +64,14 @@
         <li class="history-item-wrapper">
           <a
             class="history-item"
-            aria-label={`${item.name}.pdf. Summarized ${getRelativeTime(
+            aria-label={`${item.name}.${item.ext}. Summarized ${getRelativeTime(
               new Date(item.date),
               new Date(now)
             )}`}
             href={`/summarization/${item.id}`}
           >
             <span class="history-item-name">
-              <Truncator>{item.name}</Truncator><small>.pdf</small>
+              <Truncator>{item.name}</Truncator><small>.{item.ext}</small>
             </span>
             <span class="history-item-date">
               {getRelativeTime(new Date(item.date), new Date(now))} • {getISODate(
@@ -82,7 +83,7 @@
       {/each}
     {:else}
       <p class="no-history">
-        you haven't summarized any PDFs — <a class="link" href="/summarize"
+        you haven't summarized any files — <a class="link" href="/summarize"
           >yet...</a
         >
       </p>

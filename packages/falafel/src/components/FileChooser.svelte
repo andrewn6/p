@@ -1,10 +1,11 @@
 <script lang="ts">
   import { scale } from "../animations";
+  import { allowedFileTypes } from "../constants";
   import { Popup, PopupType } from "./PopupManager";
   import Truncator from "./Truncator.svelte";
 
-  export let allowed: string[] = ["application/pdf"];
-  export let selectedPDF: File | null,
+  export let allowed: string[] = allowedFileTypes;
+  export let selectedFile: File | null,
     active: boolean = false;
 
   function handleDragEnter() {
@@ -35,9 +36,9 @@
   function updateSelectedFile(files: File[] | null) {
     const file = files && files[0];
     if (file && !allowed.includes(file.type))
-      return new Popup("Currently, only PDFs are supported", PopupType.Error, 7000, "Error uploading file").show();
+      return new Popup("Currently, only PDFs and PowerPoints are supported", PopupType.Error, 7000, "Error uploading file").show();
 
-    selectedPDF = file!;
+    selectedFile = file!;
   }
 </script>
 
@@ -49,13 +50,13 @@
   class="file-choose transition-enforcement"
   class:active
 >
-  {#if selectedPDF}
+  {#if selectedFile}
     <div
       in:scale={{ duration: 300, delay: 150, offset: 0 }}
       out:scale={{ duration: 300, isReversed: 1, offset: 0.1 }}
       class="selected-file"
     >
-      <Truncator breakpoint={400}>{selectedPDF.name.split(".").slice(0, -1)}</Truncator><p>.{selectedPDF.name.split(".").slice(-1)}</p>
+      <Truncator breakpoint={400}>{selectedFile.name.split(".").slice(0, -1)}</Truncator><p>.{selectedFile.name.split(".").slice(-1)}</p>
     </div>
   {:else}
     <p

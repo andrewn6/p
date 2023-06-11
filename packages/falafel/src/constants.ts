@@ -11,3 +11,5 @@ export const pageStructure = [
     ["/history", "/summarization/[id]",],
     ["/", "/history",],
 ]
+
+export const allowedFileTypes = ["application/pdf", "application/vnd.openxmlformats-officedocument.presentationml.presentation"]

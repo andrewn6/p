@@ -3,7 +3,11 @@
   export let color: string = "black";
 </script>
 
-<div style={`--icon: url(/icons/${name}.svg); background-color: ${color || "black"}`} />
+<div
+  style={`--icon: url(/icons/${name}.svg); background-color: ${
+    color || "black"
+  }`}
+/>
 
 <style>
   div {
