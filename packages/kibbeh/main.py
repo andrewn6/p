@@ -1,6 +1,4 @@
-import time
 from sanic import Sanic
-from sanic.response import text, file
 from sanic.log import logger
 from sanic import response
 from sanic_cors import CORS
@@ -10,9 +8,9 @@ from pptx import Presentation
 
 import os
 import uuid
-import bisect
 import json
-import re
+import time
+
 from nltk.tokenize import word_tokenize
 import nltk
 from nltk.corpus import stopwords
@@ -34,21 +32,30 @@ model = transformers.AutoModelForSeq2SeqLM.from_pretrained(model_name)
 nlp = spacy.load("en_core_web_sm")
 nltk.download('stopwords')
 
-def read_pdf(file_path):
-    text = extract_text(file_path)
+def get_pdf_text(file_bytes: BytesIO):
+    text = extract_text(file_bytes)
     return text
 
-def read_pptx(file_path):
-  prs = Presentation(file_path)
+def get_pptx_text(file_bytes: BytesIO):
+  prs = Presentation(file_bytes)
   text = ""
   for slide in prs.slides:
     for shape in slide.shapes:
       if shape.has_text_frame:
         for paragraph in shape.text_frame.paragraphs:
-          for run in paragraphs.runs:
+          for run in paragraph.runs:
             text += run.text
 
   return text
+
+def get_file_text(supplied_file):
+    match get_file_ext(supplied_file.name):
+        case "pdf":
+            return get_pdf_text(BytesIO(supplied_file.body))
+        case "pptx":
+            return get_pptx_text(BytesIO(supplied_file.body))
+        case _:
+            return False
 
 def clean_text(text):
   stop_words = set(stopwords.words('english'))
@@ -58,12 +65,10 @@ def clean_text(text):
   word_tokens = word_tokenize(text)
 
   filtered_text = [word for word in word_tokens if word.isalnum() and not word in stop_words]
-  
-  text = ' '.join(filtered_text)
 
-  return text.strip()
+  return ' '.join(filtered_text).strip()
 
-def summarize_pdf(text): 
+def summarize_text(text: str): 
     doc = nlp(text)
     sentences = [clean_text(sent.text) for sent in doc.sents]
     processed_text = "\n".join(sentences)
@@ -82,17 +87,15 @@ def summarize_pdf(text):
 
     return completed_summary
 
-# Determine whether to use 1024, 2048, or
-# 4096 max_length to optimize performance
-def determine_max_length(text):
-    text_range = [1024, 2048, 4096]
-    found_length = bisect.bisect(text_range, len(text))
-    return text_range[found_length - 1]
-
-
-def remove_non_latin1_chars(text):
+def remove_non_latin1_chars(text: str):
     return text.encode('latin-1', 'ignore').decode('latin-1')
 
+def get_file_ext(name: str):
+    return name.rsplit(".", 1)[1].lower()
+def strip_file_ext(name: str):
+    filename = name.rsplit(".")
+    filename.pop()
+    return ".".join(filename)
 
 def write_summarization(file_path, text, file):
     if not os.path.exists('output'):
@@ -100,52 +103,46 @@ def write_summarization(file_path, text, file):
     output_path = os.path.join("output", file_path)
 
     f = open(output_path, "w")
-    f.write(json.dumps({ 'text': text, 'name': file.name.replace(".pdf", "").replace(".pptx", ""), 'date': round(time.time() * 1000) }))
+    f.write(json.dumps({ 
+        'text': text, 
+        'name': strip_file_ext(file.name), 
+        'ext': get_file_ext(file.name),
+        'date': round(time.time() * 1000),
+    }))
     f.close()
 
+valid_files = ["pdf", "pptx"]
+def valid_file_in_request(request):
+    if not request.files or 'file' not in request.files:
+        return 'No file uploaded!'
 
-def pdf_in_request(request):
-    if not request.files or 'pdf_file' not in request.files:
-        return 'No pdf file uploaded!'
+    supplied_file = request.files.get('file')
+    file_type = get_file_ext(supplied_file.name)
 
-    pdf_file = request.files.get('pdf_file')
-    file_type = pdf_file.name.rsplit(".", 1)[1].lower()
+    if not supplied_file or file_type not in valid_files:
+        return 'Invalid file type ' + file_type
 
-    if not pdf_file or file_type != "pdf":
-        return 'File uploaded is not a pdf file'
-
-    return pdf_file
-
-def pptx_in_request(request):
-  if not request.files or 'pptx_file' not in request.files:
-    return 'No pptx uploaded'
-
-  pptx_file = request.files.get('pptx_file')
-  file_type = pptx_file.name.rsplit(".", 1)[1].lower()
-
-  if not pptx_file or file_type != "pptx":
-   return "File uploaded is not a pptx file.."
-
-  return pptx_file
-
+    return supplied_file
 
 
 @app.route('/summarize', methods=['POST'])
 async def summarize(request):
-    is_pdf_in_request = pdf_in_request(request)
-    if type(is_pdf_in_request) == str:
-        return response.json({"message": is_pdf_in_request}, 400)
+    is_valid_file_in_request = valid_file_in_request(request)
+    if type(is_valid_file_in_request) == str:
+        return response.json({"message": is_valid_file_in_request}, 400)
 
-    pdf_file = is_pdf_in_request
+    supplied_file = is_valid_file_in_request
 
     try:
-        text = read_pdf(BytesIO(pdf_file.body))
-        summary = summarize_pdf(text)
+        text = get_file_text(supplied_file)
+        # This should have been avoided before
+        if (text == False): raise Exception("Invalid file extension")
+        summary = summarize_text(text)
 
         unique_id = str(uuid.uuid4())
         output_text_path = f"{unique_id}.json"
 
-        write_summarization(output_text_path, summary, pdf_file)
+        write_summarization(output_text_path, summary, supplied_file)
 
         return response.json({"id": unique_id}, 200)
 
@@ -155,13 +152,13 @@ async def summarize(request):
 
 
 @app.route('/summarization/<id>', methods=['GET'])
-async def get_pdf(request, id):
+async def get_summarization(_request, id):
     try:
         path = f"output/{id}.json"
         f = open(path, "r")
         info = json.loads(f.read())
         f.close()
-        return response.json({"text": info["text"], "name": info["name"], "date": info["date"]})
+        return response.json({"text": info["text"], "name": info["name"], "date": info["date"], "ext": info["ext"]})
 
     except FileNotFoundError as e:
         return response.json({"message": "File not found. It may have been deleted"}, 404)
@@ -169,11 +166,11 @@ async def get_pdf(request, id):
 
 @app.route('/pdf-length', methods=['GET'])
 async def pdf_length(request):
-    is_pdf_in_request = pdf_in_request(request)
+    is_pdf_in_request = valid_file_in_request(request)
     if type(is_pdf_in_request) == str:
         return response.json({"message": is_pdf_in_request}, 400)
 
-    length = len(read_pdf(is_pdf_in_request))
+    length = len(get_pdf_text(is_pdf_in_request))
 
     return response.json({"length": length})
 

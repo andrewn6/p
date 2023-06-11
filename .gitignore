@@ -3,5 +3,4 @@ __pycache__
 .env
 
 output
-output/*.pdf
-output/*.txt
+output/*.json
