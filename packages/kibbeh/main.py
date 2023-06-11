@@ -6,6 +6,7 @@ from sanic import response
 from sanic_cors import CORS
 
 from pdfminer.high_level import extract_text
+from pptx import Presentation
 
 import os
 import uuid
@@ -37,6 +38,18 @@ def read_pdf(file_path):
     text = extract_text(file_path)
     return text
 
+def read_pptx(file_path):
+  prs = Presentation(file_path)
+  text = ""
+  for slide in prs.slides:
+    for shape in slide.shapes:
+      if shape.has_text_frame:
+        for paragraph in shape.text_frame.paragraphs:
+          for run in paragraphs.runs:
+            text += run.text
+
+  return text
+
 def clean_text(text):
   stop_words = set(stopwords.words('english'))
 
@@ -55,7 +68,7 @@ def summarize_pdf(text):
     sentences = [clean_text(sent.text) for sent in doc.sents]
     processed_text = "\n".join(sentences)
 
-    max_chunk_size = 1024
+    max_chunk_size = 2048
     text_chunks = [processed_text[i: i + max_chunk_size] for i in range(0, len(processed_text), max_chunk_size)]
     summaries = []
 
@@ -87,7 +100,7 @@ def write_summarization(file_path, text, file):
     output_path = os.path.join("output", file_path)
 
     f = open(output_path, "w")
-    f.write(json.dumps({ 'text': text, 'name': file.name.replace(".pdf", ""), 'date': round(time.time() * 1000) }))
+    f.write(json.dumps({ 'text': text, 'name': file.name.replace(".pdf", "").replace(".pptx", ""), 'date': round(time.time() * 1000) }))
     f.close()
 
 
@@ -102,6 +115,19 @@ def pdf_in_request(request):
         return 'File uploaded is not a pdf file'
 
     return pdf_file
+
+def pptx_in_request(request):
+  if not request.files or 'pptx_file' not in request.files:
+    return 'No pptx uploaded'
+
+  pptx_file = request.files.get('pptx_file')
+  file_type = pptx_file.name.rsplit(".", 1)[1].lower()
+
+  if not pptx_file or file_type != "pptx":
+   return "File uploaded is not a pptx file.."
+
+  return pptx_file
+
 
 
 @app.route('/summarize', methods=['POST'])
