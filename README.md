@@ -42,6 +42,7 @@ get a summarization. returns:
     "ext": "pptx",          // the original extension
     "date": 1686509446940   // when the summarization was completed
 }
+```
 
 example using curl
 ```
