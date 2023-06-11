@@ -9,4 +9,4 @@ else
     echo Skipped installing requirements
 fi
 
-sanic main
+python main.py

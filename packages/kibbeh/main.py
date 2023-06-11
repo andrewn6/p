@@ -1,3 +1,4 @@
+import time
 from sanic import Sanic
 from sanic.response import text, file
 from sanic.log import logger
@@ -12,7 +13,8 @@ import bisect
 import json
 import re
 from nltk.tokenize import word_tokenize
-import time
+import nltk
+from nltk.corpus import stopwords
 
 from io import BytesIO
 
@@ -29,6 +31,7 @@ tokenizer = transformers.AutoTokenizer.from_pretrained(model_name)
 model = transformers.AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
 nlp = spacy.load("en_core_web_sm")
+nltk.download('stopwords')
 
 def read_pdf(file_path):
     text = extract_text(file_path)
@@ -41,7 +44,7 @@ def clean_text(text):
 
   word_tokens = word_tokenize(text)
 
-  filtered_text = [word for word in word_tokens if word.isalnum() and not word in stop_word]
+  filtered_text = [word for word in word_tokens if word.isalnum() and not word in stop_words]
   
   text = ' '.join(filtered_text)
 
@@ -149,4 +152,4 @@ async def pdf_length(request):
     return response.json({"length": length})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=3000)
