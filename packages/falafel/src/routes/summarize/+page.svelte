@@ -70,7 +70,7 @@
 </script>
 
 <Layout back>
-  <svelte:fragment slot="heading">New PDF</svelte:fragment>
+  <svelte:fragment slot="heading">New Summarization</svelte:fragment>
   <FileChooser bind:selectedFile={selectedFile} />
   <Button
     on:click={() => summarize(selectedFile)}
